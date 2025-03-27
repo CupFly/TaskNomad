@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trello Clone</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+      background: #f4f4f4;
+      overflow-x: auto; /* Pozwól na przewijanie strony w poziomie */
+    }
+    .board {
+      display: flex;
+      gap: 16px;
+      flex-wrap: nowrap; /* Zapewnia, że listy będą ułożone w jednym wierszu */
+      overflow-x: auto; /* Umożliwia przewijanie list w poziomie */
+      padding-bottom: 20px; /* Zapobiega zakrywaniu przycisków podczas przewijania */
+    }
+    .list-table {
+      width: 300px; /* Stała szerokość każdej listy */
+      border-collapse: collapse;
+      background: #e0e0e0;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      padding: 16px;
+    }
+    .list-table th {
+      text-align: left;
+      padding: 16px;
+      font-size: 18px;
+      font-weight: bold;
+      background-color: #007bff;
+      color: white;
+      border-radius: 8px 8px 0 0;
+    }
+    .list-table td {
+      padding: 16px;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+    }
+    .task-list {
+      list-style: none;
+      padding: 0;
+      margin-bottom: 0px;
+    }
+    .task {
+      font-size: 15px;
+      background: white;
+      padding: 8px;
+      margin-bottom: 8px;
+      border-radius: 4px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .task button {
+      background: #ff6347;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 4px 8px;
+      cursor: pointer;
+    }
+    .task button:hover {
+      background: #ff4500;
+    }
+    .task-input, .list-input {
+      background: #f2f2f2;
+      font-size: 15px;
+      outline: none;
+      width: 93.8%;
+      padding: 8px;
+      padding-top: 9px;
+      padding-bottom: 9px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+    .add-list-btn {
+      margin-top: 8px;
+      padding: 8px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const board = document.createElement("div");
+      board.className = "board";
+      document.getElementById("app").appendChild(board);
+
+      const lists = [
+        { title: "Do zrobienia", tasks: ["Zadanie 1", "Zadanie 2"] },
+        { title: "W toku", tasks: [] },
+        { title: "Zrobione", tasks: [] },
+      ];
+
+      function renderLists() {
+        board.innerHTML = "";
+        lists.forEach((list, listIndex) => {
+          const table = document.createElement("table");
+          table.className = "list-table";
+          
+          // Nagłówek tabeli
+          const header = document.createElement("thead");
+          const headerRow = document.createElement("tr");
+          const headerCell = document.createElement("th");
+          headerCell.colSpan = 2;  // Nagłówek rozciągający się na dwie kolumny
+          headerCell.textContent = list.title;
+          headerRow.appendChild(headerCell);
+          header.appendChild(headerRow);
+          table.appendChild(header);
+
+          // Ciało tabeli
+          const body = document.createElement("tbody");
+          const row = document.createElement("tr");
+          const cell = document.createElement("td");
+          cell.colSpan = 2; // Ciało tabeli będzie miało jedną komórkę na zadania i input
+          
+          const taskList = document.createElement("ul");
+          taskList.className = "task-list";
+          
+          list.tasks.forEach((task, taskIndex) => {
+            const taskItem = document.createElement("li");
+            taskItem.className = "task";
+            taskItem.textContent = task;
+            
+            const deleteButton = document.createElement("button");
+            deleteButton.textContent = "Usuń";
+            deleteButton.addEventListener("click", function () {
+              lists[listIndex].tasks.splice(taskIndex, 1);
+              renderLists();
+            });
+            
+            taskItem.appendChild(deleteButton);
+            taskList.appendChild(taskItem);
+          });
+          
+          const input = document.createElement("input");
+          input.className = "task-input";
+          input.placeholder = "Nowe zadanie";
+          input.addEventListener("keydown", function (e) {
+            if (e.key === "Enter" && input.value.trim()) {
+              lists[listIndex].tasks.push(input.value);
+              input.value = "";
+              renderLists();
+            }
+          });
+          
+          cell.appendChild(taskList);
+          cell.appendChild(input);
+          row.appendChild(cell);
+          body.appendChild(row);
+          table.appendChild(body);
+          
+          board.appendChild(table);
+        });
+
+        // Dodanie formularza do dodawania listy
+        const table = document.createElement("table");
+        table.className = "list-table";
+        const row = document.createElement("tr");
+        const cell = document.createElement("td");
+        
+        const listInput = document.createElement("input");
+        listInput.className = "list-input";
+        listInput.placeholder = "Nowa lista";
+        
+        const addButton = document.createElement("button");
+        addButton.className = "add-list-btn";
+        addButton.textContent = "Dodaj listę";
+        addButton.addEventListener("click", function () {
+          if (listInput.value.trim()) {
+            lists.push({ title: listInput.value, tasks: [] });
+            listInput.value = "";
+            renderLists();
+          }
+        });
+        
+        cell.appendChild(listInput);
+        cell.appendChild(addButton);
+        row.appendChild(cell);
+        table.appendChild(row);
+        board.appendChild(table);
+      }
+
+      renderLists();
+    });
+  </script>
+</body>
+</html>
